@@ -1,23 +1,29 @@
 {% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
 {% block content %}
-    <h1>Sign In</h1>
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username(size=32) }}<br>
-            {% for error in form.username.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size=32) }}<br>
-            {% for error in form.password.errors %}
-            <span style="color: red;">[{{ error }}]</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
+<div class="container" id="mainContent">
+  {{utils.flashed_messages(container=False, dismissible=True)}}
+  {% block main %}{% endblock %}
+</div>
+  <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading">Download your MarketWatch data for AP Econ</div>
+        <div class="panel-body">
+          <div class="col-md-3">
+            <form class="form" id="taskForm" method="POST">
+              {{ form.hidden_tag() }}
+              {{ wtf.form_field(form.username) }}
+              {{ wtf.form_field(form.password) }}
+              <div class="form-group">
+                <button type="button" class="btn btn-default" id="submit">Run</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+{% endblock %}
+
+{% block app_scripts %}
+   <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 {% endblock %}

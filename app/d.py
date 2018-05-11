@@ -4,13 +4,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+
 import pandas as pd
 import time, glob, os
 
 def downloadStuffs(username, password):
     options = Options()
-    options.set_headless(headless=True)
+    # options.set_headless(headless=True)
+
+
     profile = webdriver.FirefoxProfile()
+    profile.set_preference("webdriver.load.strategy", "unstable")
     profile.set_preference("browser.download.manager.showWhenStarting", False)
     profile.set_preference("browser.download.folderList", 2)
     profile.set_preference("browser.download.dir", '/Users/david/Programming/Python/marketwatchcharts/')
@@ -37,7 +42,7 @@ def downloadStuffs(username, password):
     password_field.send_keys(password)
     login_button.click()
 
-    delay = 10
+    delay = 15
     try:
         myElem = WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'profile__name')))
     except TimeoutException:
@@ -62,7 +67,7 @@ def downloadStuffs(username, password):
     # source_element = driver.find_element_by_xpath("//div[@class='download__data align--right']/a")
     # ActionChains(driver).move_to_element(source_element).perform()
     #Download CSV Files
-    delay = 10
+    delay = 15
     try:
         myElem = WebDriverWait(driver,delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'download__data')))
     except TimeoutException:
@@ -70,7 +75,7 @@ def downloadStuffs(username, password):
 
     transactions = driver.find_elements_by_xpath("//div[@class='download__data align--right']/a")
     y=transactions[0].location_once_scrolled_into_view['y']
-    y+=1000
+    y+=800
     driver.execute_script("window.scrollTo(0,{y})".format(y=y))
     transactions[0].click()
 

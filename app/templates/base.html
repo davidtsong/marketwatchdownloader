@@ -1,23 +1,33 @@
-<html>
-    <head>
-      {% if title %}
-      <title>{{ title }} - Microblog</title>
-      {% else %}
-      <title>Welcome to Microblog</title>
-      {% endif %}
-    </head>
-    <body>
-        <div>Microblog: <a href="/index">Home</a></div>
-        <hr>
-       {% with messages = get_flashed_messages() %}
-       {% if messages %}
-       <ul>
-           {% for message in messages %}
-           <li>{{ message }}</li>
-           {% endfor %}
-       </ul>
-       {% endif %}
-       {% endwith %}
-       {% block content %}{% endblock %}
-    </body>
-</html>
+{%- extends "bootstrap/base.html" %}
+{% import "bootstrap/utils.html" as utils %}
+
+{% block head %}
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  {{super()}}
+  {% if title %}
+  <title>{{ title }} - David's MarketWatch Generator</title>
+  {% else %}
+  <title>Welcome to David's MarketWatch Generator</title>
+  {% endif %}
+{% endblock %}
+
+{% block styles %}
+  {{super()}}
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="container" id="mainContent">
+    {{utils.flashed_messages(container=False, dismissible=True)}}
+    {% block main %}{% endblock %}
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{super()}}
+   <script type=text/javascript>
+     $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+   </script>
+   {% block app_scripts %}{% endblock %}
+{% endblock %}

@@ -43,7 +43,16 @@ class GenGraphs:
         except KeyError:
             appendStockChart(ticker,start,end)
         except:
+            self.stockGraphValuesRows.append([self.graphNum, "Could not find " + ticker + ", please enter manually", start, end])
+            fig = plt.figure()
+            self.graphNum = self.graphNum + 1
             print("Couldn't find stock : " + ticker)
+            plt.title("Could not find stock : " + ticker)
+            plt.xlabel('Date (Y-M-D)')
+
+            plt.ylabel('Closing Price ($)')
+
+            return fig
 
     def addStockChartYahoo(self, ticker, start, end):
         fig = plt.figure()
@@ -161,36 +170,48 @@ class GenGraphs:
 
         #Read from Transactions List and Add to Points and Create Graphs
         transactions = self.files[1]
-        # print(transactions)
+
         #strip hourly time from dates
         transactions['Transaction Date'] = pd.to_datetime(transactions['Transaction Date'])
         transactions['Transaction Date'] = transactions['Transaction Date'].apply(lambda x:x.date().strftime('%m/%d/%y'))
         #flip order again past to now and clean data
         transactions = transactions[::-1]
-        transactions['Amount'] = transactions['Amount'].str.replace(',' , '')
+        print(isinstance(transactions['Amount'][1], str))
+        if isinstance(transactions['Amount'][1], str):
+            transactions['Amount'] = transactions['Amount'].str.replace(',' , '')
+        transactions['Amount'] = transactions['Amount'].astype(float)
         transactions['Amount'] = pd.to_numeric(transactions['Amount'])
         transactions = transactions.reset_index(drop = True)
-        # print(transactions)
-        # print(transactions.index)
+        print(transactions.columns)
+        print(transactions.info())
+        print(transactions.index)
 
         #Generate the right start and end dates
         for r in range(len(transactions.index)):
             index = self.findInList(transactions['Symbol'][r], self.portfolioRows)
             print(index)
+
+
             if index != None:
                 print('Found one at : ' + str(index))
                 if(transactions['Type'][r] == 'Buy' or transactions['Type'][r] == 'Short'):
-                    self.portfolioRows[index][1] += transactions['Amount'][r]
+                    self.portfolioRows[index][1] += float(transactions['Amount'][r])
                 elif(transactions['Type'][r] == 'Sell' or transactions['Type'][r] == 'Cover'):
-                    self.portfolioRows[index][1] -= transactions['Amount'][r]
+                    self.portfolioRows[index][1] -= float(transactions['Amount'][r])
                     if(self.portfolioRows[index][1] < 1):
                         self.portfolioRows[index][3] = transactions['Transaction Date'][r]
+
             else:
                 print('None exists')
                 self.portfolioRows.append([transactions['Symbol'][r], transactions['Amount'][r], transactions['Transaction Date'][r],''])
 
         #Generate and save graphs to pdf
         for stock in self.portfolioRows:
+            if stock[3] == '':
+                print("adjusted the end date")
+                now = datetime.now()
+                stock[3] = '{}/{}/{}'.format(now.month,now.day,now.year)
+            print(stock)
             print(" Working on : " + stock[0])
             startT = [int(x) for x in stock[2].split('/')]
             startT.insert(0,2000 + startT[2])
