@@ -1,4 +1,4 @@
-from app import app
+
 from app.forms import LoginForm
 from flask import Response, request, render_template, flash, url_for, jsonify, redirect, make_response, send_file, current_app
 import os, random, threading, time
@@ -7,6 +7,7 @@ from app import tasks
 from flask import Blueprint, render_template, request, jsonify, current_app, g
 from rq import push_connection, pop_connection, Queue
 
+main_blueprint = Blueprint('main', __name__,)
 # NEED ADD ID HAHAHAHHA / NOW SOMETHING FUNKY ABOUT FILENAMES # ADD WIPER FUNCTION
 
 def get_redis_connection():
@@ -16,18 +17,18 @@ def get_redis_connection():
         redis_connection = g._redis_connection = redis.from_url(redis_url)
     return redis_connection
 
-@app.before_request
+@main_blueprint.before_request
 def push_rq_connection():
     push_connection(get_redis_connection())
 
 
-@app.teardown_request
+@main_blueprint.teardown_request
 def pop_rq_connection(exception=None):
     pop_connection()
 
-@app.route('/status/<job_id>')
+@main_blueprint.route('/status/<job_id>')
 def job_status(job_id):
-    q = Queue()
+    q = Queue('default')
     job = q.fetch_job(job_id)
     if job is None:
         response = {'status': 'unknown'}
@@ -40,9 +41,9 @@ def job_status(job_id):
             response['message'] = job.exc_info.strip().split('\n')[-1]
     return jsonify(response)
 
-@app.route('/download/<job_id>')
+@main_blueprint.route('/download/<job_id>')
 def job_download(job_id):
-    q = Queue()
+    q = Queue('default')
     job = q.fetch_job(job_id)
     file = job.result
     if job is None:
@@ -51,19 +52,19 @@ def job_download(job_id):
     #    return Response(os.open(job.result).read(), mimetype="application/zip", headers={'Content-Disposition':'attachment;filename=stockproject.zip'})
          return send_file(job.result, attachment_filename='Your Stock Project.zip')
 
-@app.route('/_runProgram', methods = ['POST'])
+@main_blueprint.route('/_runProgram', methods = ['POST'])
 def runProgram():
     username = request.form.get('username')
     password = request.form.get('password')
     #print("req for " + username + " " + password)
     #flash('Req for: {} w/ pass {}'.format(username,password), 'success')
-    q = Queue()
+    q = Queue('default')
     job = q.enqueue(tasks.run, username, password)
-    print(url_for('job_status', job_id=job.get_id()))
-    return jsonify({}), 202, {'Location': url_for('job_status', job_id=job.get_id()), 'id': job.get_id()}
+    print(url_for('main.job_status', job_id=job.get_id()))
+    return jsonify({}), 202, {'Location': url_for('main.job_status', job_id=job.get_id()), 'id': job.get_id()}
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/index', methods=['GET', 'POST'])
+@main_blueprint.route('/', methods=['GET', 'POST'])
+@main_blueprint.route('/index', methods=['GET', 'POST'])
 def index():
     form = LoginForm()
     # if form.validate_on_submit():
@@ -97,24 +98,26 @@ def index():
     return render_template('login.html', title = 'Sign In', form = form)
 
 
-@app.route('/tests', methods=['GET', 'POST'])
-def download():
-    path = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
-    key = 'davidsongis@gmail.com'
-    filepaths=['app/upload/davidsongis@gmail.com Graphs.pdf','app/upload/davidsongis@gmail.com datapoints.csv']
-    zipf = zipfile.ZipFile(path+'f.zip','w', zipfile.ZIP_DEFLATED)
-    # zipf.write(app.config['UPLOAD_FOLDER'] + 'stockGraphDataValues.csv')
-    # zipf.write(app.config['UPLOAD_FOLDER'] + 'foo.pdf')
-    zipf.write(filepaths[0])
-    zipf.write(filepaths[1])
-    zipf.close()
 
-    return send_from_directory(directory=path, filename='f.zip', as_attachment=True)
 
-    # return send_file('upload/f.zip',
-    #         mimetype = 'zip',
-    #         attachment_filename= 'f'+'.zip',
-    #         as_attachment = True)
+# @main_blueprint.route('/tests', methods=['GET', 'POST'])
+# def download():
+#     path = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
+#     key = 'davidsongis@gmail.com'
+#     filepaths=['app/upload/davidsongis@gmail.com Graphs.pdf','app/upload/davidsongis@gmail.com datapoints.csv']
+#     zipf = zipfile.ZipFile(path+'f.zip','w', zipfile.ZIP_DEFLATED)
+#     # zipf.write(app.config['UPLOAD_FOLDER'] + 'stockGraphDataValues.csv')
+#     # zipf.write(app.config['UPLOAD_FOLDER'] + 'foo.pdf')
+#     zipf.write(filepaths[0])
+#     zipf.write(filepaths[1])
+#     zipf.close()
+#
+#     return send_from_directory(directory=path, filename='f.zip', as_attachment=True)
+#
+#     # return send_file('upload/f.zip',
+#     #         mimetype = 'zip',
+#     #         attachment_filename= 'f'+'.zip',
+#     #         as_attachment = True)
 
 
 #

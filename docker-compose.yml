@@ -1,0 +1,31 @@
+version: '3'
+services:
+  web:
+    build: .
+    container_name: marketwatchgraphgenerator
+    environment:
+      LOCAL_SETTINGS: /app/settings.cfg
+    command: python3 manage.py run --host 0.0.0.0
+    ports:
+    - "5000:5000"
+    volumes:
+    - .:/app
+    depends_on:
+    - redis
+  worker:
+    build: './app/worker'
+    container_name: worker
+    command: python3 manage.py run_worker
+    volumes:
+    - .:/app
+    depends_on:
+    - redis
+  redis:
+    image: redis:alpine
+    # volumes:
+    # - redis_data:/data
+    ports:
+    - "6379:6379"
+
+# volumes:
+#   redis_data:

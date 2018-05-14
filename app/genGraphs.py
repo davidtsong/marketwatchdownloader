@@ -4,8 +4,9 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 import fix_yahoo_finance as yf
+from flask import current_app
 import glob
-from app import app
+
 
 from matplotlib.backends.backend_pdf import PdfPages
 class GenGraphs:
@@ -243,4 +244,4 @@ class GenGraphs:
 
         print("YOU DID IT!")
 
-        return ['app/' + app.config['UPLOAD_FOLDER'] + self.key + ' Graphs.pdf', 'app/' + app.config['UPLOAD_FOLDER'] + self.key + ' datapoints.csv']
+        return ['app/' + current_app.config['UPLOAD_FOLDER'] + self.key + ' Graphs.pdf', 'app/' + current_app.config['UPLOAD_FOLDER'] + self.key + ' datapoints.csv']

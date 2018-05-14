@@ -1,0 +1,16 @@
+fix-yahoo-finance==0.0.21
+Flask==1.0.2
+Flask-Bootstrap==3.3.7.1
+Flask-WTF==0.14.2
+lxml==4.2.1
+matplotlib
+panda==0.3.1
+pandas==0.22.0
+pandas-datareader>=0.6.0
+python-dateutil==2.7.2
+redis==2.10.5
+requests==2.18.4
+selenium
+WTForms==2.1
+rq
+flask_script == 2.0.6
