@@ -2,33 +2,34 @@
 from app.forms import LoginForm
 from flask import Response, request, render_template, flash, url_for, jsonify, redirect, make_response, send_file, current_app
 import os, random, threading, time
-import redis
+from redis import Redis
 from app import tasks
 from flask import Blueprint, render_template, request, jsonify, current_app, g
 from rq import push_connection, pop_connection, Queue
 
 main_blueprint = Blueprint('main', __name__,)
+conn=Redis('localhost', 6379)
 # NEED ADD ID HAHAHAHHA / NOW SOMETHING FUNKY ABOUT FILENAMES # ADD WIPER FUNCTION
 
-def get_redis_connection():
-    redis_connection = getattr(g, '_redis_connection', None)
-    if redis_connection is None:
-        redis_url = current_app.config['REDIS_URL']
-        redis_connection = g._redis_connection = redis.from_url(redis_url)
-    return redis_connection
-
-@main_blueprint.before_request
-def push_rq_connection():
-    push_connection(get_redis_connection())
-
-
-@main_blueprint.teardown_request
-def pop_rq_connection(exception=None):
-    pop_connection()
+# def get_redis_connection():
+#     redis_connection = getattr(g, '_redis_connection', None)
+#     if redis_connection is None:
+#         redis_url = current_app.config['REDIS_URL']
+#         redis_connection = g._redis_connection = redis.from_url(redis_url)
+#     return redis_connection
+#
+# @main_blueprint.before_request
+# def push_rq_connection():
+#     push_connection(get_redis_connection())
+#
+#
+# @main_blueprint.teardown_request
+# def pop_rq_connection(exception=None):
+#     pop_connection()
 
 @main_blueprint.route('/status/<job_id>')
 def job_status(job_id):
-    q = Queue('default')
+    q = Queue('default',conn)
     job = q.fetch_job(job_id)
     if job is None:
         response = {'status': 'unknown'}
@@ -43,7 +44,7 @@ def job_status(job_id):
 
 @main_blueprint.route('/download/<job_id>')
 def job_download(job_id):
-    q = Queue('default')
+    q = Queue('default',conn)
     job = q.fetch_job(job_id)
     file = job.result
     if job is None:
@@ -58,7 +59,7 @@ def runProgram():
     password = request.form.get('password')
     #print("req for " + username + " " + password)
     #flash('Req for: {} w/ pass {}'.format(username,password), 'success')
-    q = Queue('default')
+    q = Queue(connection=Redis())
     job = q.enqueue(tasks.run, username, password)
     print(url_for('main.job_status', job_id=job.get_id()))
     return jsonify({}), 202, {'Location': url_for('main.job_status', job_id=job.get_id()), 'id': job.get_id()}
@@ -77,7 +78,7 @@ def index():
     #     else:
     #         flash(result, 'success')
     #     return redirect(url_for('index.html'))
-    return render_template('login.html', form = form)
+    # return render_template('login.html', form = form)
     # if form.validate_on_submit():
     #     key = form.username.data
     #     flash('Login requested for user {}, pass={}'.format(

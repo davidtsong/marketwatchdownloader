@@ -1,14 +1,11 @@
-import time
-import zipfile
-from flask import current_app
-from app.d import *
-from flask import request, render_template, flash, jsonify, redirect, make_response, send_from_directory, current_app
 
+from app.d import *
 from app.genGraphs import *
 
 def run(username, password):
     key = username
     files = downloadStuffs(username,password)
+    print(files)
     print("Creating Graphs")
     g = GenGraphs(files, username)
     filepaths = g.run()

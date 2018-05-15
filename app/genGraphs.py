@@ -7,8 +7,8 @@ import fix_yahoo_finance as yf
 from flask import current_app
 import glob
 
-
 from matplotlib.backends.backend_pdf import PdfPages
+
 class GenGraphs:
     key = ''
     stockOverviewColumns= ['Name', '1' , '2', '3', '4', '5','6','7','8','9','10']
@@ -139,13 +139,15 @@ class GenGraphs:
             return None
 
     def run(self):
-        yf.pdr_override()
+        print("Starting Graph Run Function")
+        # yf.pdr_override()
         #Get CSV Files based on credentials
 
         # plot1 = addStockChart('GOOGL', (2018,4,1), (2018,5,1))
         # plot2 = addStockChart('GOOGL', (2018,4,27), (2018,5,1))
 
         #Add Portfolio Performance to stockGraph Values and Graph
+        print("YF Overriden")
         overall = self.files[0]
 
         overall.set_index(['Date'],inplace=True)
@@ -162,12 +164,15 @@ class GenGraphs:
         overall['Net Worth'] = pd.to_numeric(overall['Net Worth'])
         #print(overall.info())
 
+        print("Overall Graph Data Generated")
+
         plt.plot(overall.index[::10], overall['Net Worth'][::10])
         plt.title('0: Overall Portfolio Performance')
         plt.xlabel('Date (Y-M-D)')
         plt.ylabel('Value ($)')
 
         self.stockGraphFigures.append(fig)
+        print("Overall Graph Created")
 
         #Read from Transactions List and Add to Points and Create Graphs
         transactions = self.files[1]

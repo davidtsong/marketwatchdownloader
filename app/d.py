@@ -11,7 +11,7 @@ import time, glob, os
 
 def downloadStuffs(username, password):
     options = Options()
-    options.set_headless(headless=True)
+    # options.set_headless(headless=True)
 
 
     profile = webdriver.FirefoxProfile()
@@ -28,7 +28,7 @@ def downloadStuffs(username, password):
     # profile.add_argument("browser.helperApps.neverAsk.saveToDisk", "text/csv")
 
 
-    driver = webdriver.Firefox(firefox_options=options, firefox_profile = profile, executable_path='/usr/bin/geckodriver')
+    driver = webdriver.Firefox(firefox_options=options, firefox_profile = profile, executable_path='/usr/local/bin/geckodriver')
 
     username = username
     password = password
@@ -95,8 +95,10 @@ def downloadStuffs(username, password):
     overall = pd.read_csv(overallPath)
     transactions = pd.read_csv(transactionsPath)
 
+    print("removing files")
     os.remove(overallPath)
     os.remove(transactionsPath)
     driver.close()
 
+    print("returning files")
     return [overall,transactions]

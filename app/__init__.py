@@ -8,7 +8,8 @@ def create_app(script_info=None):
     Bootstrap(app)
     app.config['SECRET_KEY'] = 'you-will-never-guesss'
     app.config['UPLOAD_FOLDER'] = "upload/"
-    app.config['REDIS_URL'] = "redis://redis:6379/0"
+    # app.config['REDIS_URL'] = "redis://redis:6379/0"
+    app.config['REDIS_URL'] = "localhost:6379"
     app.config['QUEUES'] = "default"
 
     from app.routes import main_blueprint
