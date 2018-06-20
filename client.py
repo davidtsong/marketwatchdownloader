@@ -33,4 +33,4 @@ def test(username,password):
     print(filepaths)
 
 if __name__ == '__main__':
-    test('davidsongis@gmail.com','compsci')
+    test('','')
